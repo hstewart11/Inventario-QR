@@ -21,7 +21,9 @@ import kotlinx.coroutines.*
 @Composable
 fun LoginScreen(
     context: Context,
-    onIrARegistro: () -> Unit
+    onIrARegistro: () -> Unit,
+    // ¡Añadido! Acción para la navegación exitosa
+    onLoginExitoso: () -> Unit
 ) {
     var usuario by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
@@ -72,12 +74,13 @@ fun LoginScreen(
                 CoroutineScope(Dispatchers.IO).launch {
                     val usuarioValido = usuarioDao.validar(usuario, contrasena)
                     withContext(Dispatchers.Main) {
-                        val mensaje = if (usuarioValido != null) {
-                            "Inicio de sesión exitoso"
+                        if (usuarioValido != null) {
+                            // LLAMADA CLAVE: Activa la navegación a "home"
+                            onLoginExitoso()
+                            Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
                         } else {
-                            "Usuario o contraseña incorrectos"
+                            Toast.makeText(context, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show()
                         }
-                        Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
                     }
                 }
             },
