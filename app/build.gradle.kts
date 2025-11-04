@@ -46,7 +46,6 @@ android {
         kotlinCompilerExtensionVersion = "1.5.3"
     }
 }
-
 dependencies {
     // Core
     implementation("androidx.core:core-ktx:1.13.1")
