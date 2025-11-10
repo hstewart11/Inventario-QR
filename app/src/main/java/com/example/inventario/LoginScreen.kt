@@ -22,7 +22,6 @@ import kotlinx.coroutines.*
 fun LoginScreen(
     context: Context,
     onIrARegistro: () -> Unit,
-    // ¡Añadido! Acción para la navegación exitosa
     onLoginExitoso: () -> Unit
 ) {
     var usuario by remember { mutableStateOf("") }
@@ -36,7 +35,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.disenoqr),
+            painter = painterResource(id = R.drawable.disenoqr), // Asegúrate de que R.drawable.disenoqr existe
             contentDescription = "QR Logo",
             modifier = Modifier
                 .size(300.dp)
@@ -75,7 +74,6 @@ fun LoginScreen(
                     val usuarioValido = usuarioDao.validar(usuario, contrasena)
                     withContext(Dispatchers.Main) {
                         if (usuarioValido != null) {
-                            // LLAMADA CLAVE: Activa la navegación a "home"
                             onLoginExitoso()
                             Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
                         } else {

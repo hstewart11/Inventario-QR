@@ -1,3 +1,5 @@
+// Archivo: HomeScreen.kt
+
 package com.example.inventario
 
 import androidx.compose.foundation.Image
@@ -17,7 +19,10 @@ import kotlinx.coroutines.launch
 // Importamos la anotación para el TopAppBar y ModalNavigationDrawer
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    // ¡NUEVO! Función para la navegación a la pantalla de Ajustes
+    onNavigateToSettings: () -> Unit
+) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -27,7 +32,8 @@ fun HomeScreen() {
             DrawerContent(
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }
-                }
+                },
+                onNavigateToSettings = onNavigateToSettings // Pasamos la función al Drawer
             )
         }
     ) {
@@ -89,7 +95,10 @@ fun HomeScreen() {
 // Contenido del menú plegable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DrawerContent(onCloseDrawer: () -> Unit) {
+fun DrawerContent(
+    onCloseDrawer: () -> Unit,
+    onNavigateToSettings: () -> Unit // ¡NUEVO! Función para la navegación
+) {
     ModalDrawerSheet {
         Column(
             modifier = Modifier
@@ -99,7 +108,7 @@ fun DrawerContent(onCloseDrawer: () -> Unit) {
         ) {
             // LOGO QR
             Image(
-                painter = painterResource(id = R.drawable.disenoqr),
+                painter = painterResource(id = R.drawable.disenoqr), // Asegúrate de que R.drawable.disenoqr exista
                 contentDescription = "QR Logo",
                 modifier = Modifier.size(100.dp)
             )
@@ -108,21 +117,23 @@ fun DrawerContent(onCloseDrawer: () -> Unit) {
 
             // OPCIONES DE NAVEGACIÓN
             DrawerItem(text = "Ver Inventario", icon = null, onClick = {
-                // Aquí iría la navegación
                 onCloseDrawer()
+                // Aquí iría la navegación real (e.g., navController.navigate(NavRoutes.INVENTORY))
             })
             DrawerItem(text = "Analizar QR", icon = null, onClick = {
-                // Aquí iría la navegación
                 onCloseDrawer()
+                // Aquí iría la navegación real (e.g., navController.navigate(NavRoutes.SCANNER))
             })
             DrawerItem(text = "Agregar Inventario", icon = null, onClick = {
-                // Aquí iría la navegación
                 onCloseDrawer()
+                // Aquí iría la navegación real (e.g., navController.navigate(NavRoutes.ADD_ITEM))
             })
             HorizontalDivider()
+
+            // OPCIÓN DE AJUSTES (llama a la función de navegación)
             DrawerItem(text = "Ajustes", icon = null, onClick = {
-                // Aquí iría la navegación
                 onCloseDrawer()
+                onNavigateToSettings() // <-- Navega a la pantalla de Ajustes
             })
         }
     }
