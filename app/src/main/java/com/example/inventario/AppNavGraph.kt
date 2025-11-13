@@ -2,25 +2,18 @@ package com.example.inventario
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
-// Define tus rutas de navegación (NavRoutes debe existir en tu proyecto)
-object NavRoutes {
-    const val LOGIN = "login"
-    const val REGISTER = "register"
-    const val HOME = "home"
-    const val INVENTORY = "inventory_flow" // Apunta al flujo principal
-    const val PRINTER_SETTINGS = "printer_settings"
-}
+import com.example.inventario.data.InventarioDatabase
 
 @Composable
 fun AppNavGraph(
-    navController: NavHostController,
-    context: Context
+    context: Context,
+    db: InventarioDatabase
 ) {
+    val navController = rememberNavController()
+
     NavHost(
         navController = navController,
         startDestination = NavRoutes.LOGIN
@@ -29,9 +22,11 @@ fun AppNavGraph(
         composable(NavRoutes.LOGIN) {
             LoginScreen(
                 context = context,
-                onLoginExitoso = { navController.navigate(NavRoutes.HOME) {
-                    popUpTo(NavRoutes.LOGIN) { inclusive = true }
-                } },
+                onLoginExitoso = {
+                    navController.navigate(NavRoutes.HOME) {
+                        popUpTo(NavRoutes.LOGIN) { inclusive = true }
+                    }
+                },
                 onIrARegistro = { navController.navigate(NavRoutes.REGISTER) }
             )
         }
@@ -40,34 +35,46 @@ fun AppNavGraph(
         composable(NavRoutes.REGISTER) {
             RegistroScreen(
                 context = context,
-                onRegistroExitoso = { navController.navigate(NavRoutes.HOME) {
-                    popUpTo(NavRoutes.LOGIN) { inclusive = true }
-                } }
+                onRegistroExitoso = {
+                    navController.navigate(NavRoutes.HOME) {
+                        popUpTo(NavRoutes.LOGIN) { inclusive = true }
+                    }
+                }
             )
         }
 
         // --- RUTA 2: HOME ---
         composable(NavRoutes.HOME) {
             HomeScreen(
-                onNavigateToSettings = { navController.navigate(NavRoutes.PRINTER_SETTINGS) },
-                onNavigateToInventory = { navController.navigate(NavRoutes.INVENTORY) }
+                navController = navController,
+                db = db,
+                onNavigateToSettings = { navController.navigate(NavRoutes.PRINTER_SETTINGS) }
             )
         }
 
-        // --- RUTA 3: INVENTARIO (Apunta al gestor de estados) ---
-        composable(NavRoutes.INVENTORY) {
-            // InventoryFlowScreen gestiona la vista de lista y la de agregar producto
-            InventoryFlowScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // --- RUTA 4: AJUSTES DE IMPRESORA ---
+        // --- RUTA 3: AJUSTES DE IMPRESORA ---
         composable(NavRoutes.PRINTER_SETTINGS) {
             PrinterSettingsScreen(
                 context = context,
                 onBack = { navController.popBackStack() },
                 onSave = { navController.popBackStack() }
+            )
+        }
+
+        // --- RUTA 4: ESCÁNER QR ---
+        composable(NavRoutes.SCANNER) {
+            ScannerScreen(
+                navController = navController,
+                db = db
+            )
+        }
+
+        // --- RUTA 5: RESULTADO QR ---
+        composable("qr_result/{qrContent}") { backStackEntry ->
+            val qrContent = backStackEntry.arguments?.getString("qrContent") ?: ""
+            QRResultScreen(
+                qrContent = qrContent,
+                onBack = { navController.popBackStack() }
             )
         }
     }

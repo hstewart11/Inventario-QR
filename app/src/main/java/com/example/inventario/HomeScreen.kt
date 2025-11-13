@@ -2,40 +2,45 @@ package com.example.inventario
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Inventory
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.inventario.data.InventarioDatabase
+import com.example.inventario.data.Producto
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToSettings: () -> Unit,
-    onNavigateToInventory: () -> Unit
+    navController: NavHostController,
+    db: InventarioDatabase,
+    onNavigateToSettings: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val productos by produceState<List<Producto>>(initialValue = emptyList()) {
+        value = db.productoDao().obtenerHistorial()
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             DrawerContent(
-                onCloseDrawer = {
-                    scope.launch { drawerState.close() }
-                },
-                onNavigateToSettings = onNavigateToSettings,
-                onNavigateToInventory = onNavigateToInventory
+                navController = navController,
+                onCloseDrawer = { scope.launch { drawerState.close() } },
+                onNavigateToSettings = onNavigateToSettings
             )
         }
     ) {
@@ -62,7 +67,6 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxSize()
             ) {
-                // SALUDO
                 Text(
                     text = "Bienvenido",
                     style = MaterialTheme.typography.headlineLarge,
@@ -70,36 +74,60 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // SECCIÓN DE STOCK BAJO (Contenido temporal)
                 Text(
-                    text = "Productos con Stock Bajo:",
+                    text = "Historial de productos escaneados:",
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Text(
-                        text = "Actualmente no hay productos con stock bajo.",
-                        modifier = Modifier.padding(16.dp)
-                    )
+                if (productos.isEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = "No hay productos registrados aún.",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                } else {
+                    LazyColumn {
+                        items(productos) { producto ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                elevation = CardDefaults.cardElevation(2.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text("QR: ${producto.codigoQR}", fontWeight = FontWeight.Bold)
+                                    Text("Nombre: ${producto.nombre}")
+                                    Text("Cantidad: ${producto.cantidad}")
+                                    Text("Operación: ${producto.tipoOperacion}")
+                                    Text("Fecha: ${formatearFecha(producto.fecha)}")
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-// Contenido del menú plegable (Drawer)
+fun formatearFecha(timestamp: Long): String {
+    val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+    return sdf.format(Date(timestamp))
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DrawerContent(
+    navController: NavHostController,
     onCloseDrawer: () -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onNavigateToInventory: () -> Unit
+    onNavigateToSettings: () -> Unit
 ) {
     ModalDrawerSheet {
         Column(
@@ -108,7 +136,6 @@ fun DrawerContent(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // LOGO QR
             Image(
                 painter = painterResource(id = R.drawable.disenoqr),
                 contentDescription = "QR Logo",
@@ -117,43 +144,28 @@ fun DrawerContent(
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider()
 
-            // 1. Ver Inventario
-            DrawerItem(
-                text = "Ver Inventario",
-                icon = Icons.Filled.Inventory,
-                onClick = {
-                    onCloseDrawer()
-                    onNavigateToInventory()
-                }
-            )
-
-            // 2. Analizar QR
-            DrawerItem(
-                text = "Analizar QR",
-                icon = Icons.Filled.QrCodeScanner,
-                onClick = {
-                    onCloseDrawer()
-                }
-            )
-
-
-
+            DrawerItem(text = "Ver Inventario", icon = null, onClick = {
+                onCloseDrawer()
+                // navController.navigate(NavRoutes.INVENTORY)
+            })
+            DrawerItem(text = "Analizar QR", icon = null, onClick = {
+                onCloseDrawer()
+                navController.navigate(NavRoutes.SCANNER)
+            })
+            DrawerItem(text = "Agregar Inventario", icon = null, onClick = {
+                onCloseDrawer()
+                // navController.navigate(NavRoutes.ADD_ITEM)
+            })
             HorizontalDivider()
 
-            // 4. OPCIÓN DE AJUSTES
-            DrawerItem(
-                text = "Ajustes de Impresora",
-                icon = Icons.Filled.Settings,
-                onClick = {
-                    onCloseDrawer()
-                    onNavigateToSettings()
-                }
-            )
+            DrawerItem(text = "Ajustes", icon = null, onClick = {
+                onCloseDrawer()
+                onNavigateToSettings()
+            })
         }
     }
 }
 
-// Elemento reutilizable para las opciones del menú
 @Composable
 fun DrawerItem(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector?, onClick: () -> Unit) {
     NavigationDrawerItem(
