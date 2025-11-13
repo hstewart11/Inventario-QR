@@ -1,11 +1,13 @@
-// Archivo: HomeScreen.kt
-
 package com.example.inventario
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -16,12 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-// Importamos la anotación para el TopAppBar y ModalNavigationDrawer
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    // ¡NUEVO! Función para la navegación a la pantalla de Ajustes
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToInventory: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -33,7 +34,8 @@ fun HomeScreen(
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }
                 },
-                onNavigateToSettings = onNavigateToSettings // Pasamos la función al Drawer
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToInventory = onNavigateToInventory
             )
         }
     ) {
@@ -44,7 +46,6 @@ fun HomeScreen(
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch {
-                                // Alternar el estado del menú
                                 if (drawerState.isClosed) drawerState.open() else drawerState.close()
                             }
                         }) {
@@ -92,12 +93,13 @@ fun HomeScreen(
     }
 }
 
-// Contenido del menú plegable
+// Contenido del menú plegable (Drawer)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DrawerContent(
     onCloseDrawer: () -> Unit,
-    onNavigateToSettings: () -> Unit // ¡NUEVO! Función para la navegación
+    onNavigateToSettings: () -> Unit,
+    onNavigateToInventory: () -> Unit
 ) {
     ModalDrawerSheet {
         Column(
@@ -108,33 +110,45 @@ fun DrawerContent(
         ) {
             // LOGO QR
             Image(
-                painter = painterResource(id = R.drawable.disenoqr), // Asegúrate de que R.drawable.disenoqr exista
+                painter = painterResource(id = R.drawable.disenoqr),
                 contentDescription = "QR Logo",
                 modifier = Modifier.size(100.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider()
 
-            // OPCIONES DE NAVEGACIÓN
-            DrawerItem(text = "Ver Inventario", icon = null, onClick = {
-                onCloseDrawer()
-                // Aquí iría la navegación real (e.g., navController.navigate(NavRoutes.INVENTORY))
-            })
-            DrawerItem(text = "Analizar QR", icon = null, onClick = {
-                onCloseDrawer()
-                // Aquí iría la navegación real (e.g., navController.navigate(NavRoutes.SCANNER))
-            })
-            DrawerItem(text = "Agregar Inventario", icon = null, onClick = {
-                onCloseDrawer()
-                // Aquí iría la navegación real (e.g., navController.navigate(NavRoutes.ADD_ITEM))
-            })
+            // 1. Ver Inventario
+            DrawerItem(
+                text = "Ver Inventario",
+                icon = Icons.Filled.Inventory,
+                onClick = {
+                    onCloseDrawer()
+                    onNavigateToInventory()
+                }
+            )
+
+            // 2. Analizar QR
+            DrawerItem(
+                text = "Analizar QR",
+                icon = Icons.Filled.QrCodeScanner,
+                onClick = {
+                    onCloseDrawer()
+                }
+            )
+
+
+
             HorizontalDivider()
 
-            // OPCIÓN DE AJUSTES (llama a la función de navegación)
-            DrawerItem(text = "Ajustes", icon = null, onClick = {
-                onCloseDrawer()
-                onNavigateToSettings() // <-- Navega a la pantalla de Ajustes
-            })
+            // 4. OPCIÓN DE AJUSTES
+            DrawerItem(
+                text = "Ajustes de Impresora",
+                icon = Icons.Filled.Settings,
+                onClick = {
+                    onCloseDrawer()
+                    onNavigateToSettings()
+                }
+            )
         }
     }
 }

@@ -2,25 +2,33 @@ package com.example.inventario
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
-// Asumiendo que LoginScreen, RegistroScreen, HomeScreen, NavRoutes y PrinterSettingsScreen existen en este paquete.
+// Define tus rutas de navegación (NavRoutes debe existir en tu proyecto)
+object NavRoutes {
+    const val LOGIN = "login"
+    const val REGISTER = "register"
+    const val HOME = "home"
+    const val INVENTORY = "inventory_flow" // Apunta al flujo principal
+    const val PRINTER_SETTINGS = "printer_settings"
+}
 
 @Composable
-fun AppNavGraph(context: Context) {
-    val navController = rememberNavController()
-
+fun AppNavGraph(
+    navController: NavHostController,
+    context: Context
+) {
     NavHost(
         navController = navController,
-        // La aplicación inicia en la pantalla de LOGIN
         startDestination = NavRoutes.LOGIN
     ) {
-        // --- RUTA 0: LOGIN (Parámetros confirmados por LoginScreen.kt) ---
+        // --- RUTA 0: LOGIN ---
         composable(NavRoutes.LOGIN) {
             LoginScreen(
-                context = context, // LoginScreen también pide el contexto
+                context = context,
                 onLoginExitoso = { navController.navigate(NavRoutes.HOME) {
                     popUpTo(NavRoutes.LOGIN) { inclusive = true }
                 } },
@@ -28,29 +36,33 @@ fun AppNavGraph(context: Context) {
             )
         }
 
-        // --- RUTA 1: REGISTRO (Parámetros confirmados por RegistroScreen.kt) ---
+        // --- RUTA 1: REGISTRO ---
         composable(NavRoutes.REGISTER) {
-            // CORRECCIÓN CRÍTICA: La función se llama RegistroScreen, no RegisterScreen.
-            // La función solo espera 'context' y 'onRegistroExitoso'.
             RegistroScreen(
                 context = context,
                 onRegistroExitoso = { navController.navigate(NavRoutes.HOME) {
-                    // Opcional: Navegar a HOME al registrarse
                     popUpTo(NavRoutes.LOGIN) { inclusive = true }
                 } }
-                // Nota: Tu RegistroScreen.kt no tiene el callback onNavigateBack, así que lo eliminamos.
             )
         }
 
-        // --- RUTA 2: HOME (Parámetros confirmados por HomeScreen.kt) ---
+        // --- RUTA 2: HOME ---
         composable(NavRoutes.HOME) {
-            // HomeScreen no necesita el contexto.
             HomeScreen(
-                onNavigateToSettings = { navController.navigate(NavRoutes.PRINTER_SETTINGS) }
+                onNavigateToSettings = { navController.navigate(NavRoutes.PRINTER_SETTINGS) },
+                onNavigateToInventory = { navController.navigate(NavRoutes.INVENTORY) }
             )
         }
 
-        // --- RUTA 3: AJUSTES DE IMPRESORA ---
+        // --- RUTA 3: INVENTARIO (Apunta al gestor de estados) ---
+        composable(NavRoutes.INVENTORY) {
+            // InventoryFlowScreen gestiona la vista de lista y la de agregar producto
+            InventoryFlowScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- RUTA 4: AJUSTES DE IMPRESORA ---
         composable(NavRoutes.PRINTER_SETTINGS) {
             PrinterSettingsScreen(
                 context = context,
