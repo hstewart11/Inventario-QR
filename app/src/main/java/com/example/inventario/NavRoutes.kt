@@ -8,4 +8,6 @@ object NavRoutes {
     const val PRINTER_SETTINGS = "printer_settings"
     const val SCANNER = "scanner"
     const val QR_RESULT = "qr_result/{qrContent}"  // Ruta para mostrar el resultado del escaneo
+    const val INVENTARIO = "inventario"
+    const val AGREGAR_PRODUCTO = "agregar_producto"
 }

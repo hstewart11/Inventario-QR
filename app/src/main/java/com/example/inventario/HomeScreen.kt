@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -144,21 +144,20 @@ fun DrawerContent(
             Spacer(modifier = Modifier.height(16.dp))
             HorizontalDivider()
 
-            DrawerItem(text = "Ver Inventario", icon = null, onClick = {
+            DrawerItem(text = "Ver Inventario", icon = Icons.Default.Inventory, onClick = {
                 onCloseDrawer()
-                // navController.navigate(NavRoutes.INVENTORY)
+                navController.navigate(NavRoutes.INVENTARIO)
             })
-            DrawerItem(text = "Analizar QR", icon = null, onClick = {
+            DrawerItem(text = "Agregar Inventario", icon = Icons.Default.Add, onClick = {
+                onCloseDrawer()
+                navController.navigate(NavRoutes.AGREGAR_PRODUCTO)
+            })
+            DrawerItem(text = "Analizar QR", icon = Icons.Default.QrCodeScanner, onClick = {
                 onCloseDrawer()
                 navController.navigate(NavRoutes.SCANNER)
             })
-            DrawerItem(text = "Agregar Inventario", icon = null, onClick = {
-                onCloseDrawer()
-                // navController.navigate(NavRoutes.ADD_ITEM)
-            })
             HorizontalDivider()
-
-            DrawerItem(text = "Ajustes", icon = null, onClick = {
+            DrawerItem(text = "Ajustes", icon = Icons.Default.Settings, onClick = {
                 onCloseDrawer()
                 onNavigateToSettings()
             })
@@ -167,7 +166,11 @@ fun DrawerContent(
 }
 
 @Composable
-fun DrawerItem(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector?, onClick: () -> Unit) {
+fun DrawerItem(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector?,
+    onClick: () -> Unit
+) {
     NavigationDrawerItem(
         label = { Text(text) },
         selected = false,

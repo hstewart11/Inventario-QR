@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.inventario.data.InventarioDatabase
+import com.example.inventario.ui.*
 
 @Composable
 fun AppNavGraph(
@@ -70,11 +71,24 @@ fun AppNavGraph(
         }
 
         // --- RUTA 5: RESULTADO QR ---
-        composable("qr_result/{qrContent}") { backStackEntry ->
+        composable(NavRoutes.QR_RESULT) { backStackEntry ->
             val qrContent = backStackEntry.arguments?.getString("qrContent") ?: ""
             QRResultScreen(
                 qrContent = qrContent,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- RUTA 6: VER INVENTARIO ---
+        composable(NavRoutes.INVENTARIO) {
+            InventarioScreen(db = db)
+        }
+
+        // --- RUTA 7: AGREGAR PRODUCTO ---
+        composable(NavRoutes.AGREGAR_PRODUCTO) {
+            AgregarProductoScreen(
+                db = db,
+                onProductoAgregado = { navController.popBackStack() }
             )
         }
     }
